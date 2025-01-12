@@ -4,42 +4,21 @@ import {
   useAccount,
   useBalance,
   useConnect,
-  useDisconnect, useEnsAvatar, useEnsName,
-
+  useDisconnect, 
   useSwitchChain,
-  http,
-  createConfig,
+
 } from "wagmi";
 
-
-import { bscTestnet,fantomTestnet, base, mainnet } from 'wagmi/chains'
-import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors'
-import './Wagmi.css'; // Import the CSS module
+import './Wagmi.css';
+import { config } from "../wagmiConfig"; 
+import { formatUnits } from "viem";
+// import { formatUnits } from "ethers/lib/utils";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import NetworkSelector from '../components/NetworkSelector';
 import ContractInteraction from "../components/ContractInteraction";
 
-
-
-const projectId = import.meta.env.REOWN_PROJECT_ID;
-
-
-export const config = createConfig({
-  chains: [bscTestnet,fantomTestnet, mainnet, base],
-  connectors: [
-    injected(),
-    walletConnect({ projectId }),
-    metaMask(),
-    safe(),
-  ],
-  transports: {
-    [bscTestnet.id]: http(),
-    [fantomTestnet.id]: http(),
-    [mainnet.id]: http(),
-    [base.id]: http(),
-  },
-});
 
 const queryClient = new QueryClient();
 
@@ -48,9 +27,9 @@ function Wagmi() {
     <QueryClientProvider client={queryClient}>
         <WagmiProvider config={config}>
             <div className="container">
-            <h1 className="title">Wagmi Wallet</h1>
-            <WalletManager />
-        </div>
+                <h1 className="title">Wagmi Wallet</h1>
+                <WalletManager />
+            </div>
         </WagmiProvider>
     </QueryClientProvider>
   );
@@ -66,26 +45,23 @@ export function WalletOptions() {
   ))
 }
 
-export function ChainOptions() {   
-    const { chains, switchChain } = useSwitchChain()
-    
-    return chains.map((chain) => (
-        <button key={chain.id} onClick={() => switchChain({ chainId: chain.id })} className="button">
-        {chain.name}
-        </button>
-    ))
-}
-
 function WalletManager() {
   const { address, isConnected,chain } = useAccount()
   const { disconnect } = useDisconnect()
-  const { data: ensName } = useEnsName({ address })
-  const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+//   const { data: ensName } = useEnsName({ address })
+//   const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
   const { chains, switchChain } = useSwitchChain()
 
   const { data: balance } = useBalance({
     address,
+    unit: 'ether',
   });
+
+  useEffect(() => {
+    if (address) {
+      console.log(`Address changed to ${address} `);
+    }
+  }, [address]);
 
   useEffect(() => {
     if (chain) {
@@ -103,24 +79,15 @@ function WalletManager() {
   return (
     <div>
       <div className="walletInfo">
-      {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
-      {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
+      {/* {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
+      {address && <div>{ensName ? `${ensName} (${address})` : address}</div>} */}
       <button onClick={() => disconnect()} className="button">Disconnect</button>
     </div>
-      <h1>Connected Wallet: {address}</h1>
+      <h3>Connected Wallet: {address}</h3>
       <h2 className="balance">
-        Balance: {balance?.formatted} {balance?.symbol}
+            Balance: {balance ?  parseFloat(formatUnits(balance.value,18)).toFixed(7) : '0.0'} {balance?.symbol}
       </h2>
-      <div>
-        <label htmlFor="chainSelect" className="label">Select Network:</label>
-        <select id="chainSelect" onChange={handleChainChange} className="select">
-          {chains.map((chain) => (
-            <option key={chain.id} value={chain.id}>
-              {chain.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <NetworkSelector chains={chains} selectedChainId={chain?.id} handleChainChange={handleChainChange} />
       {chain && <ContractInteraction chain={chain} />}
     </div>
   );
