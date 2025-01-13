@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   WagmiProvider,
   useAccount,
@@ -7,23 +7,24 @@ import {
   useSwitchChain,
 } from 'wagmi';
 
-import './Wagmi.css';
-import { config } from '../wagmiConfig';
+import { wagmiConfig } from '../walletConfig';
 import { formatUnits } from 'viem';
-// import { formatUnits } from "ethers/lib/utils";
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import NetworkSelector from '../components/NetworkSelector';
-import ContractInteraction from '../components/ContractInteraction';
 import WalletOptions from '../components/WalletOptions';
+import NetworkSelector from '../components/NetworkSelector';
+import NativeTokenTransfer from '../components/NativeTokenTransfer';
+import ContractInteraction from '../components/ContractInteraction';
+
+import './Wagmi.css';
 
 const queryClient = new QueryClient();
 
 function Wagmi() {
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider config={config}>
+      <WagmiProvider config={wagmiConfig}>
         <div className="container">
           <h1 className="title">Wagmi Wallet</h1>
           <WalletManager />
@@ -34,13 +35,14 @@ function Wagmi() {
 }
 
 function WalletManager() {
-  const { address, isConnected, chain } = useAccount();
-  const { disconnect } = useDisconnect();
   //   const { data: ensName } = useEnsName({ address })
   //   const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+  const { address, isConnected, chain } = useAccount();
+  const { disconnect } = useDisconnect();
   const { chains, switchChain } = useSwitchChain();
+  const [componentKey, setComponentKey] = useState(0);
 
-  const { data: balance } = useBalance({
+  const { data: balance, refetch: refetchBalance } = useBalance({
     address,
     unit: 'ether',
   });
@@ -54,6 +56,7 @@ function WalletManager() {
   useEffect(() => {
     if (chain) {
       console.log(`Network changed to ${chain.name} (${chain.id})`);
+      setComponentKey((prevKey) => prevKey + 1);
     }
   }, [chain]);
 
@@ -68,7 +71,7 @@ function WalletManager() {
     <div>
       <div className="walletInfo">
         {/* {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
-      {address && <div>{ensName ? `${ensName} (${address})` : address}</div>} */}
+        {address && <div>{ensName ? `${ensName} (${address})` : address}</div>} */}
         <button onClick={() => disconnect()} className="button">
           Disconnect
         </button>
@@ -86,7 +89,17 @@ function WalletManager() {
         selectedChainId={chain?.id}
         handleChainChange={handleChainChange}
       />
-      {chain && <ContractInteraction chain={chain} />}
+      {chain && (
+        <NativeTokenTransfer
+          key={`native-${componentKey}`}
+          chain={chain}
+          refetchBalance={refetchBalance}
+        />
+      )}
+      <hr className="divider" />
+      {chain && (
+        <ContractInteraction key={`contract-${componentKey}`} chain={chain} />
+      )}
     </div>
   );
 }

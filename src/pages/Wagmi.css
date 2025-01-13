@@ -81,3 +81,9 @@
   border-color: #3498db;
   outline: none;
 }
+
+.divider {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #bdc3c7;
+}

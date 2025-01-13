@@ -1,46 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   //   getDefaultWallets,
   //   connectorsForWallets,
   darkTheme,
   RainbowKitProvider,
   ConnectButton,
-  getDefaultConfig,
 } from '@rainbow-me/rainbowkit';
-import { useAccount, useBalance, WagmiProvider, useSwitchChain } from 'wagmi';
-import {
-  bscTestnet,
-  fantomTestnet,
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-} from 'wagmi/chains';
-import { formatUnits } from 'viem';
 import '@rainbow-me/rainbowkit/styles.css';
+
+import { useAccount, useBalance, WagmiProvider, useSwitchChain } from 'wagmi';
+import { formatUnits } from 'viem';
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import NetworkSelector from '../components/NetworkSelector';
+import NativeTokenTransfer from '../components/NativeTokenTransfer';
 import ContractInteraction from '../components/ContractInteraction';
+
+import { rainbowConfig } from '../walletConfig';
+
 import './Rainbow.css';
-
-const projectId = import.meta.env.VITE_REOWN_PROJECT_ID;
-
-console.log('projectId', projectId);
-export const config1 = getDefaultConfig({
-  appName: 'RainbowKit demo',
-  projectId: projectId,
-  chains: [bscTestnet, fantomTestnet, mainnet, polygon, optimism, arbitrum],
-});
 
 const queryClient = new QueryClient();
 
 const Rainbow: React.FC = () => {
   return (
-    <WagmiProvider config={config1}>
+    <WagmiProvider config={rainbowConfig}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           locale="en"
-          // chains={chains}
           theme={darkTheme({
             accentColor: '#7b3fe4',
             accentColorForeground: 'white',
@@ -57,19 +44,26 @@ const Rainbow: React.FC = () => {
 
 function MainApp() {
   const { address, chain } = useAccount();
-  const { data: balance } = useBalance({
+  const { data: balance, refetch: refetchBalance } = useBalance({
     address,
     unit: 'ether',
   });
   const { chains, switchChain } = useSwitchChain();
+  const [componentKey, setComponentKey] = useState(0);
 
   useEffect(() => {
     if (address) {
-      //   provider.getBalance(address).then((userBalance) => {
-      //     setBalance(formatUnits(userBalance, 18));
-      //   });
+      console.log(`Address changed to ${address}`);
     }
   }, [address]);
+
+  useEffect(() => {
+    if (chain) {
+      console.log(`Network changed to ${chain.name} (${chain.id})`);
+      // Update component key to force remount
+      setComponentKey((prevKey) => prevKey + 1);
+    }
+  }, [chain]);
 
   const handleChainChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const chainId = parseInt(event.target.value, 10);
@@ -99,7 +93,20 @@ function MainApp() {
             selectedChainId={chain?.id}
             handleChainChange={handleChainChange}
           />
-          {chain && <ContractInteraction chain={chain} />}
+          {chain && (
+            <NativeTokenTransfer
+              key={`native-${componentKey}`}
+              chain={chain}
+              refetchBalance={refetchBalance}
+            />
+          )}
+          <hr className="divider" />
+          {chain && (
+            <ContractInteraction
+              key={`contract-${componentKey}`}
+              chain={chain}
+            />
+          )}
         </div>
       )}
     </div>

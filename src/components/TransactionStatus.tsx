@@ -11,7 +11,6 @@ interface TransactionStatusProps {
   isConfirming: boolean;
   isConfirmed: boolean;
   error: WriteContractErrorType | null;
-  //   getExplorerLink: (hash: string) => string;
 }
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({
@@ -21,20 +20,6 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
   isConfirmed,
   error,
 }) => {
-  const getExplorerLink = (hash: string) => {
-    const explorerUrls: { [key: number]: string } = {
-      1: `https://etherscan.io/tx/${hash}`,
-      5: `https://goerli.etherscan.io/tx/${hash}`,
-      56: `https://bscscan.com/tx/${hash}`,
-      97: `https://testnet.bscscan.com/tx/${hash}`,
-      250: `https://ftmscan.com/tx/${hash}`,
-      4002: `https://testnet.ftmscan.com/tx/${hash}`,
-      8453: `https://basescan.org/tx/${hash}`,
-      84531: `https://goerli.basescan.org/tx/${hash}`,
-    };
-    return explorerUrls[chain.id] || `https://etherscan.io/tx/${hash}`;
-  };
-
   return (
     <div>
       {hash && (
@@ -47,10 +32,10 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
             <FontAwesomeIcon icon={faCheckCircle} className="icon success" />
           )}
           <a
-            href={getExplorerLink(hash)}
+            href={getExplorerLink(chain, hash)}
             target="_blank"
             rel="noopener noreferrer"
-            className="link"
+            className="link hash-link"
           >
             {hash}
           </a>
@@ -62,6 +47,20 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
       )}
     </div>
   );
+};
+
+const getExplorerLink = (chain: Chain, hash: string) => {
+  const explorerUrls: { [key: number]: string } = {
+    1: `https://etherscan.io/tx/${hash}`,
+    5: `https://goerli.etherscan.io/tx/${hash}`,
+    56: `https://bscscan.com/tx/${hash}`,
+    97: `https://testnet.bscscan.com/tx/${hash}`,
+    250: `https://ftmscan.com/tx/${hash}`,
+    4002: `https://testnet.ftmscan.com/tx/${hash}`,
+    8453: `https://basescan.org/tx/${hash}`,
+    84531: `https://goerli.basescan.org/tx/${hash}`,
+  };
+  return explorerUrls[chain.id] || `https://etherscan.io/tx/${hash}`;
 };
 
 export default TransactionStatus;
