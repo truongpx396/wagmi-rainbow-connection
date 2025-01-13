@@ -4,13 +4,16 @@ import {
   useAccount,
 
   useWaitForTransactionReceipt,
-  useReadContract,
+  useReadContracts,
+//   useReadContract,
   useWriteContract,
   useBlockNumber,
   type BaseError,
 } from "wagmi";
 
-import tokenAbi from '../constants/abi/Token.json'; // Import the ABI from Token.json
+import { formatUnits, parseUnits } from "viem";
+
+import tokenAbi from '../constants/abi/Token.json';
 import TransactionStatus from "./TransactionStatus";
 
 import { Chain } from 'wagmi/chains'
@@ -33,7 +36,7 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
   
     const { data: blockNumber } = useBlockNumber({ watch: true })
   
-      useEffect(() => {
+    useEffect(() => {
         // want to refetch every `n` block instead? use the modulo operator!
         // if (blockNumber % 5 === 0) refetch() // refetch every 5 blocks
         refetch()
@@ -41,13 +44,25 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
     
   
   
-    // Fetch token balance
-    const { data: tokenBalance, error : errorBalance,
-      isPending: isPendingLoad,refetch } = useReadContract({
-      ...tokenAbi,
-      functionName: "balanceOf",
-      args: [address || '0x0000000000000000000000000000000000000000'],
-    });
+   // Fetch token balance and symbol
+  const { data, error: errorContracts, isPending: isPendingContracts, refetch } = useReadContracts({
+    contracts: [
+      {
+        abi: tokenAbi,
+        address: '0x2486b14A10b5d396A3866955840D0bbB777AE6FD',
+        functionName: "balanceOf",
+        args: [address || '0x0000000000000000000000000000000000000000'],
+      },
+      {
+        abi: tokenAbi,
+        address: '0x2486b14A10b5d396A3866955840D0bbB777AE6FD',
+        functionName: "symbol",
+      },
+    ],
+  });
+
+  const tokenBalance = data?.[0]?.result;
+  const tokenSymbol = data?.[1]?.result;
   
   
     const handleTransfer =  () => {
@@ -59,20 +74,25 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
       // Ensure the recipient address starts with '0x'
       const formattedRecipient = recipient.startsWith('0x') ? recipient : `0x${recipient}`;
   
+      // Parse the amount to wei
+    const amountInWei = parseUnits(amount.toString(), 18);
+
       writeContract({
-          address: '0xFBA3912Ca04dd458c843e2EE08967fC04f3579c2',
+          address: '0x2486b14A10b5d396A3866955840D0bbB777AE6FD',
           abi: tokenAbi,
           functionName: 'transfer',
-          args: [formattedRecipient as `0x${string}`, BigInt(amount)]
+          args: [formattedRecipient as `0x${string}`, amountInWei]
       })
        
      
     };
   
-  
+    // Format the token balance with commas as thousands separators
+    const formattedTokenBalance = tokenBalance ? new Intl.NumberFormat().format(parseFloat(formatUnits(tokenBalance, 18))) : '0.0';
+
     return (
       <div>
-        <h2>Token Balance: {tokenBalance?.toString()}</h2>
+        <h2>Token Balance: {formattedTokenBalance} {tokenSymbol}</h2>
         {/* <h3>Token Price: {priceInUSD ? `$${priceInUSD}` : "Fetching..."} USD</h3> */}
         <div>
           <input
@@ -101,10 +121,10 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
             error={error}
           />
         {
-          isPendingLoad && <div>Loading Contract BalanceOf...</div>
+          isPendingContracts && <div>Loading Contract BalanceOf...</div>
         }
         {
-          errorBalance && <div>Error: {(error as BaseError)?.shortMessage || error?.message}</div>
+          errorContracts && <div>Error: {(error as BaseError)?.shortMessage || error?.message}</div>
         }
       </div>
     );

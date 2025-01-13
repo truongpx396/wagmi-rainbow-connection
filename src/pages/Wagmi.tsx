@@ -3,7 +3,6 @@ import {
   WagmiProvider,
   useAccount,
   useBalance,
-  useConnect,
   useDisconnect, 
   useSwitchChain,
 
@@ -18,6 +17,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import NetworkSelector from '../components/NetworkSelector';
 import ContractInteraction from "../components/ContractInteraction";
+import WalletOptions from "../components/WalletOptions";
 
 
 const queryClient = new QueryClient();
@@ -33,16 +33,6 @@ function Wagmi() {
         </WagmiProvider>
     </QueryClientProvider>
   );
-}
-
-export function WalletOptions() {
-  const { connectors, connect } = useConnect()
-
-  return connectors.map((connector) => (
-    <button key={connector.uid} onClick={() => connect({ connector })} className="button">
-    {connector.name}
-  </button>
-  ))
 }
 
 function WalletManager() {
