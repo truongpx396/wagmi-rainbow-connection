@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import reactLogo from '../assets/react.svg'
-import viteLogo from '/vite.svg'
-import './home.css'
+import { useState } from 'react';
+import reactLogo from '../assets/react.svg';
+import viteLogo from '/vite.svg';
+import './home.css';
 
-const Home : React.FC = () => {
-  const [count, setCount] = useState(0)
+const Home: React.FC = () => {
+  const [count, setCount] = useState(0);
 
   return (
     <div className="home-container">
@@ -29,7 +29,7 @@ const Home : React.FC = () => {
         Click on the Vite and React logos to learn more
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

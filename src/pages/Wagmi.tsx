@@ -1,46 +1,44 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 import {
   WagmiProvider,
   useAccount,
   useBalance,
-  useDisconnect, 
+  useDisconnect,
   useSwitchChain,
-
-} from "wagmi";
+} from 'wagmi';
 
 import './Wagmi.css';
-import { config } from "../wagmiConfig"; 
-import { formatUnits } from "viem";
+import { config } from '../wagmiConfig';
+import { formatUnits } from 'viem';
 // import { formatUnits } from "ethers/lib/utils";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import NetworkSelector from '../components/NetworkSelector';
-import ContractInteraction from "../components/ContractInteraction";
-import WalletOptions from "../components/WalletOptions";
-
+import ContractInteraction from '../components/ContractInteraction';
+import WalletOptions from '../components/WalletOptions';
 
 const queryClient = new QueryClient();
 
 function Wagmi() {
   return (
     <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={config}>
-            <div className="container">
-                <h1 className="title">Wagmi Wallet</h1>
-                <WalletManager />
-            </div>
-        </WagmiProvider>
+      <WagmiProvider config={config}>
+        <div className="container">
+          <h1 className="title">Wagmi Wallet</h1>
+          <WalletManager />
+        </div>
+      </WagmiProvider>
     </QueryClientProvider>
   );
 }
 
 function WalletManager() {
-  const { address, isConnected,chain } = useAccount()
-  const { disconnect } = useDisconnect()
-//   const { data: ensName } = useEnsName({ address })
-//   const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
-  const { chains, switchChain } = useSwitchChain()
+  const { address, isConnected, chain } = useAccount();
+  const { disconnect } = useDisconnect();
+  //   const { data: ensName } = useEnsName({ address })
+  //   const { data: ensAvatar } = useEnsAvatar({ name: ensName! })
+  const { chains, switchChain } = useSwitchChain();
 
   const { data: balance } = useBalance({
     address,
@@ -69,19 +67,28 @@ function WalletManager() {
   return (
     <div>
       <div className="walletInfo">
-      {/* {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
+        {/* {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
       {address && <div>{ensName ? `${ensName} (${address})` : address}</div>} */}
-      <button onClick={() => disconnect()} className="button">Disconnect</button>
-    </div>
+        <button onClick={() => disconnect()} className="button">
+          Disconnect
+        </button>
+      </div>
       <h3>Connected Wallet: {address}</h3>
       <h2 className="balance">
-            Balance: {balance ?  parseFloat(formatUnits(balance.value,18)).toFixed(7) : '0.0'} {balance?.symbol}
+        Balance:{' '}
+        {balance
+          ? parseFloat(formatUnits(balance.value, 18)).toFixed(7)
+          : '0.0'}{' '}
+        {balance?.symbol}
       </h2>
-      <NetworkSelector chains={chains} selectedChainId={chain?.id} handleChainChange={handleChainChange} />
+      <NetworkSelector
+        chains={chains}
+        selectedChainId={chain?.id}
+        handleChainChange={handleChainChange}
+      />
       {chain && <ContractInteraction chain={chain} />}
     </div>
   );
 }
-
 
 export default Wagmi;

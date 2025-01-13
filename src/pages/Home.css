@@ -1,35 +1,35 @@
 /* Center the content of the Home page */
 .home-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  text-align: center;
+}
+
+.logo {
+  height: 6rem;
+  pointer-events: none;
+}
+
+.logo.react {
+  animation: logo-spin infinite 20s linear;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
   }
-  
-  .logo {
-    height: 6rem;
-    pointer-events: none;
+  to {
+    transform: rotate(360deg);
   }
-  
-  .logo.react {
-    animation: logo-spin infinite 20s linear;
-  }
-  
-  @keyframes logo-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  
-  .card {
-    margin: 2rem;
-  }
-  
-  .read-the-docs {
-    color: #888;
-  }
+}
+
+.card {
+  margin: 2rem;
+}
+
+.read-the-docs {
+  color: #888;
+}
