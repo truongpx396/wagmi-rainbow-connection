@@ -1,5 +1,8 @@
 import React from 'react';
-import { WriteContractErrorType } from 'wagmi/actions';
+import {
+  WriteContractErrorType,
+  SendTransactionErrorType,
+} from 'wagmi/actions';
 import { Chain } from 'wagmi/chains';
 import './TransactionStatus.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -10,7 +13,7 @@ interface TransactionStatusProps {
   hash: string | undefined;
   isConfirming: boolean;
   isConfirmed: boolean;
-  error: WriteContractErrorType | null;
+  error: WriteContractErrorType | SendTransactionErrorType | null;
 }
 
 const TransactionStatus: React.FC<TransactionStatusProps> = ({

@@ -42,8 +42,8 @@ const NativeTokenTransfer: React.FC<NativeTokenTransferProps> = ({
 
     // Ensure the recipient address starts with '0x'
     const formattedRecipient = recipient.startsWith('0x')
-      ? recipient
-      : `0x${recipient}`;
+      ? (recipient as `0x${string}`)
+      : (`0x${recipient}` as `0x${string}`);
 
     // Parse the amount to wei
     const amountInWei = parseUnits(amount, 18);

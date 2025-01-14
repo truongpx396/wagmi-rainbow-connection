@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import {
   useAccount,
   useWaitForTransactionReceipt,
@@ -70,8 +70,8 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
     ],
   });
 
-  const tokenBalance = data?.[0]?.result;
-  const tokenSymbol = data?.[1]?.result;
+  const tokenBalance = data?.[0]?.result as bigint;
+  const tokenSymbol = data?.[1]?.result as ReactNode;
 
   const handleTransfer = () => {
     if (!recipient || !amount || isNaN(amount) || BigInt(amount) <= 0) {
@@ -138,14 +138,11 @@ const ContractInteraction: React.FC<ContractInteractionProps> = ({ chain }) => {
       />
       {isPendingContracts && <div>Loading Contract BalanceOf...</div>}
       {errorContracts && (
-        <div>
-          Error: {(errorContracts as BaseError)?.shortMessage || error?.message}
-        </div>
+        <div>Error: {(errorContracts as BaseError)?.shortMessage || 'NaN'}</div>
       )}
       {errorWriteCotract && (
         <div>
-          Error:{' '}
-          {(errorWriteCotract as BaseError)?.shortMessage || error?.message}
+          Error: {(errorWriteCotract as BaseError)?.shortMessage || 'NaN'}
         </div>
       )}
     </div>
